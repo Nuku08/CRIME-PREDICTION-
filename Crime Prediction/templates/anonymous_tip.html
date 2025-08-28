@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonymous Tip</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Anonymous Tip Submission</h1>
+    </header>
+    <main>
+        <div style="display: flex; gap: 2rem; align-items: flex-start; width: 100%;">
+            <section id="anonymous-tip" style="flex: 1; min-width: 300px; display: flex; flex-direction: column; align-items: flex-start;">
+                <h2>Submit an Anonymous Tip</h2>
+                <form action="/anonymous_tip" method="post" style="margin-bottom: 2em; width: 100%;">
+                    <label for="activity">Suspicious Activity:</label>
+                    <input type="text" id="activity" name="activity" placeholder="Describe activity" required>
+                    <label for="location">Location:</label>
+                    <input type="text" id="location" name="location" placeholder="Enter location" required>
+                    <label for="time">Time:</label>
+                    <input type="datetime-local" id="time" name="time" required>
+                    <label for="details">Additional Details:</label>
+                    <textarea id="details" name="details" placeholder="Any extra info..." rows="3"></textarea>
+                    <button type="submit" class="btn">Submit Tip</button>
+                </form>
+            </section>
+            <section id="incident-logging" style="flex: 2; min-width: 300px; display: flex; flex-direction: column; align-items: flex-end;">
+                <h2>Incident Logging</h2>
+                <table style="width:90%;border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th>Activity</th>
+                            <th>Location</th>
+                            <th>Time</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% if tips and tips|length > 0 %}
+                        {% for tip in tips %}
+                        <tr>
+                            <td>{{ tip.activity }}</td>
+                            <td>{{ tip.location }}</td>
+                            <td>{{ tip.time }}</td>
+                            <td>{{ tip.details }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="4" style="text-align:center;">No incidents reported yet.</td></tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

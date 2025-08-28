@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crime Prediction and Visualization</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
+</head>
+<body>
+    <header>
+    <script>
+        window.heatmapData = {{ heatmap|tojson|safe if heatmap is defined and heatmap else '[]' }};
+    </script>
+        <h1>Crime Prediction and Visualization System</h1>
+    </header>
+    <main>
+        <section id="dashboard" class="card" style="max-width: 700px; width: 100%; align-items: center;">
+            <h2 style="text-align:center;">Dashboard</h2>
+            <div style="text-align:right; margin-bottom:1rem;">
+                <a href="/anonymous_tip" class="btn" style="background:#6ec6ca; color:#fff; padding:0.6em 1.2em; border-radius:8px; text-decoration:none; font-weight:bold;">Submit Anonymous Tip</a>
+            </div>
+            <div id="map" style="width: 100%; max-width: 600px; height: 350px; margin: 0 auto 1.2rem auto;"></div>
+            <form method="post" style="max-width: 400px; width: 100%; margin: 0 auto;">
+                <label for="location">Location:</label>
+                <input type="text" id="location" name="location" placeholder="Enter location" required>
+                <label for="time">Time:</label>
+                <input type="datetime-local" id="time" name="time" required>
+                <button type="submit" class="btn">Submit</button>
+            </form>
+            <div id="results" class="card" style="max-width: 600px; width: 100%; margin: 2rem auto 0 auto; align-items: center;">
+                <h2 style="text-align:center;">Results</h2>
+                <div id="alerts" style="margin-bottom:1rem;"></div>
+                <div id="crime-summary" class="placeholder" style="font-size:1.2rem; margin-bottom:1rem;">
+                    {% if summary %}
+                        {{ summary }}
+                        <div id="crime-chance" style="margin-top:0.5rem; font-weight:bold; color:#e74c3c;">
+                            {% if 'Probability of crime:' in summary %}
+                                {{ summary.split('Probability of crime:')[1].strip() }}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        Enter a location to see total crime count.
+                    {% endif %}
+                </div>
+                <div id="heatmap" class="placeholder" style="width:100%; min-height: 200px;">
+                    <!-- Heatmap will be rendered here by JS -->
+                </div>
+            </div>
+        </section>
+        <!-- Anonymous Tip section remains unchanged -->
+    </main>
+    <script src="/static/scripts.js"></script>
+    <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const map = new maplibregl.Map({
+                    style: 'https://tiles.openfreemap.org/styles/liberty',
+                    center: [13.388, 52.517],
+                    zoom: 9.5,
+                    container: 'map',
+                });
+                window.mapInstance = map;
+                console.log('MapLibre GL map initialized successfully.');
+                // Add heatmap markers after map loads
+                map.on('load', function() {
+                    if (window.heatmapData && window.heatmapData.length > 0) {
+                        window.heatmapData.forEach(function(point) {
+                            if (point.latitude && point.longitude) {
+                                new maplibregl.Marker({color: '#e74c3c'})
+                                    .setLngLat([point.longitude, point.latitude])
+                                    .setPopup(new maplibregl.Popup().setText(`${point.district}: ${point.count} crimes`))
+                                    .addTo(map);
+                            }
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error('Error initializing the MapLibre GL map:', error);
+            }
+        });
+    </script>
+</body>
+</html>
